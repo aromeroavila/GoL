@@ -8,13 +8,13 @@ import android.widget.Button;
 
 import arao.gameoflife.controller.Generator;
 import arao.gameoflife.controller.GeneratorImpl;
-import arao.gameoflife.view.custom.Board;
+import arao.gameoflife.view.custom.BoardView;
 import arao.gameoflife.R;
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Generator mGenerator;
-    private Board chessboard;
+    private BoardView chessboard;
     private boolean taskCheck;
     private Handler handler;
 
@@ -24,12 +24,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_board);
         Button button = (Button) findViewById(R.id.button);
         button.setOnClickListener(this);
-        chessboard = (Board) findViewById(R.id.board_view);
-        boolean[][] emptyBoard = new boolean[30][30];
+        chessboard = (BoardView) findViewById(R.id.board_view);
+        boolean[][] emptyBoard = new boolean[60][60];
         chessboard.setCells(emptyBoard);
         mGenerator = new GeneratorImpl();
         handler = new Handler();
-        handler.postDelayed(runnable, 300);
+        handler.postDelayed(runnable, 500);
     }
 
     @Override

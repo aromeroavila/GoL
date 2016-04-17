@@ -4,10 +4,11 @@ public class GeneratorImpl implements Generator {
 
     @Override
     public boolean[][] nextGeneration(boolean[][] currentGeneration) {
-
         int boardWidth = currentGeneration.length;
         int boardHeight = currentGeneration[0].length;
+
         boolean[][] nextGeneration = new boolean[boardWidth][boardHeight];
+
         byte neighbourCount;
 
         for (int i = 0; i < boardWidth; i++) {
