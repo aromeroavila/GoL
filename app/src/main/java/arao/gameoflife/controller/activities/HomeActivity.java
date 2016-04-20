@@ -14,8 +14,7 @@ import arao.gameoflife.model.Cell;
 import arao.gameoflife.view.ui.HomeUi;
 import arao.gameoflife.view.ui.ViewModule;
 
-public class HomeActivity extends AppCompatActivity implements ActivityController,
-        HomeController {
+public class HomeActivity extends AppCompatActivity implements ActivityController, HomeController {
 
     @Inject
     Generator mGenerator;
