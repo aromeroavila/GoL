@@ -9,24 +9,37 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import javax.inject.Inject;
+
+import arao.gameoflife.model.Cell;
+
 public class BoardView extends View {
 
     private final static int CELL_SPACING_PIXELS = 1;
 
-    private final Paint mCellColor;
-    private final Rect mRectangle;
+    @Inject
+    Paint mCellColor;
+    @Inject
+    Rect mRectangle;
 
     private boolean[][] mGeneration;
     private int mColumns;
     private int mRows;
-
     private int mCellPixelSize;
+    private OnCellClickListener mOnCellClickListener;
 
     public BoardView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
+        resolveDependencies();
         setFocusable(true);
-        mCellColor = new Paint();
-        mRectangle = new Rect();
+    }
+
+    private void resolveDependencies() {
+        CustomViewComponent component = DaggerCustomViewComponent.builder()
+                .customModule(new CustomModule())
+                .build();
+
+        component.resolveDependenciesFor(this);
     }
 
     public void setCells(boolean[][] cells) {
@@ -36,8 +49,8 @@ public class BoardView extends View {
         invalidate();
     }
 
-    public boolean[][] getCells() {
-        return mGeneration;
+    public void setOnCellClickListener(OnCellClickListener listener) {
+        mOnCellClickListener = listener;
     }
 
     @Override
@@ -47,21 +60,14 @@ public class BoardView extends View {
             final int height = getHeight();
 
             mCellPixelSize = Math.min(getCellWidth(width), getCellHeight(height));
+            Cell cell = Cell.Builder.aCell().build();
 
             for (int i = 0; i < mColumns; i++) {
                 for (int j = 0; j < mRows; j++) {
-                    final int xPos = getCellInitialX(i);
-                    final int yPos = getCellInitialY(j);
-
-                    mRectangle.set(
-                            xPos + CELL_SPACING_PIXELS,                   // left
-                            yPos + CELL_SPACING_PIXELS,                   // top
-                            xPos + mCellPixelSize - CELL_SPACING_PIXELS,  // right
-                            yPos + mCellPixelSize - CELL_SPACING_PIXELS); // bottom
-
-                    mCellColor.setColor(mGeneration[i][j] ? Color.BLUE : Color.WHITE);
-                    canvas.drawRect(mRectangle, mCellColor);
-                    mRectangle.setEmpty();
+                    cell.setX(i);
+                    cell.setY(j);
+                    cell.setValue(mGeneration[i][j]);
+                    drawCell(canvas, cell);
                 }
             }
         }
@@ -78,15 +84,34 @@ public class BoardView extends View {
             int cellColumn = getCellColumn(x);
             int cellRow = getCellRow(y);
 
-            if (cellColumn != -1 && cellRow != -1 && !mGeneration[cellColumn][cellRow]) {
-                mGeneration[cellColumn][cellRow] = true;
-                invalidate();
-
-                return true;
+            if (cellColumn != -1 && cellRow != -1
+                    && !mGeneration[cellColumn][cellRow]
+                    && mOnCellClickListener != null) {
+                Cell clickedCell = Cell.Builder.aCell()
+                        .x(cellColumn)
+                        .y(cellRow)
+                        .value(true)
+                        .build();
+                mOnCellClickListener.onCellClick(clickedCell);
             }
         }
 
         return false;
+    }
+
+    private void drawCell(Canvas canvas, Cell cell) {
+        final int xPos = getCellInitialX(cell.getX());
+        final int yPos = getCellInitialY(cell.getY());
+
+        mRectangle.set(
+                xPos + CELL_SPACING_PIXELS,                   // left
+                yPos + CELL_SPACING_PIXELS,                   // top
+                xPos + mCellPixelSize - CELL_SPACING_PIXELS,  // right
+                yPos + mCellPixelSize - CELL_SPACING_PIXELS); // bottom
+
+        mCellColor.setColor(cell.getValue() ? Color.BLUE : Color.WHITE);
+        canvas.drawRect(mRectangle, mCellColor);
+        mRectangle.setEmpty();
     }
 
     private int getCellRow(int y) {

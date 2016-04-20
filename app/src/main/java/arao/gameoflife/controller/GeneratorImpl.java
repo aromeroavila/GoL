@@ -1,6 +1,6 @@
 package arao.gameoflife.controller;
 
-public class GeneratorImpl implements Generator {
+class GeneratorImpl implements Generator {
 
     @Override
     public boolean[][] nextGeneration(boolean[][] currentGeneration) {

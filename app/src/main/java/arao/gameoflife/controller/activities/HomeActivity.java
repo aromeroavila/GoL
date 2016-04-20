@@ -3,37 +3,65 @@ package arao.gameoflife.controller.activities;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.Button;
 
+import javax.inject.Inject;
+
+import arao.gameoflife.controller.ControllerModule;
 import arao.gameoflife.controller.Generator;
-import arao.gameoflife.controller.GeneratorImpl;
-import arao.gameoflife.view.custom.BoardView;
-import arao.gameoflife.R;
+import arao.gameoflife.injection.components.DaggerGlobalComponent;
+import arao.gameoflife.injection.components.GlobalComponent;
+import arao.gameoflife.model.Cell;
+import arao.gameoflife.view.ui.HomeUi;
+import arao.gameoflife.view.ui.ViewModule;
 
-public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
+public class HomeActivity extends AppCompatActivity implements ActivityController,
+        HomeController {
 
-    private Generator mGenerator;
-    private BoardView chessboard;
+    @Inject
+    Generator mGenerator;
+    @Inject
+    HomeUi homeUi;
+    @Inject
+    Handler handler;
+
     private boolean taskCheck;
-    private Handler handler;
+    private boolean[][] mCurrentGeneration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_board);
-        Button button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(this);
-        chessboard = (BoardView) findViewById(R.id.board_view);
-        boolean[][] emptyBoard = new boolean[60][60];
-        chessboard.setCells(emptyBoard);
-        mGenerator = new GeneratorImpl();
-        handler = new Handler();
+
+        resolveDependencies();
+
+        homeUi.createView(this, this);
+        initaliseBoard();
+
         handler.postDelayed(runnable, 500);
     }
 
+    private void resolveDependencies() {
+        GlobalComponent component = DaggerGlobalComponent.builder()
+                .activityModule(new ActivityModule())
+                .viewModule(new ViewModule())
+                .controllerModule(new ControllerModule())
+                .build();
+
+        component.resolveDependenciesFor(this);
+    }
+
+    private void initaliseBoard() {
+        mCurrentGeneration = new boolean[10][10];
+        homeUi.setData(mCurrentGeneration);
+    }
+
     @Override
-    public void onClick(View v) {
+    public void onCellClicked(Cell cell) {
+        mCurrentGeneration[cell.getX()][cell.getY()] = cell.getValue();
+        homeUi.setData(mCurrentGeneration);
+    }
+
+    @Override
+    public void onRunClicked() {
         taskCheck = !taskCheck;
     }
 
@@ -41,7 +69,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void run() {
             if (taskCheck) {
-                chessboard.setCells(mGenerator.nextGeneration(chessboard.getCells()));
+                mCurrentGeneration = mGenerator.nextGeneration(mCurrentGeneration);
+                homeUi.setData(mCurrentGeneration);
             }
             handler.postDelayed(runnable, 300);
         }
