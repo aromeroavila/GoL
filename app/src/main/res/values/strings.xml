@@ -6,5 +6,6 @@
     <string name="size_bar_label_text">Size</string>
     <string name="speed_bar_label_text">Speed</string>
     <string name="color_bar_label_text">Color</string>
+    <string name="clear_button_text">Clear</string>
 
 </resources>

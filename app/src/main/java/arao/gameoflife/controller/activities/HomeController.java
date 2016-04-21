@@ -8,6 +8,8 @@ public interface HomeController {
 
     void onRunClicked();
 
+    void onClearClicked();
+
     void onBoardViewSized(int width, int height);
 
     void onSpeedChanged(int newSpeed);

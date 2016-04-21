@@ -20,8 +20,12 @@ import static java.lang.System.arraycopy;
 
 public class HomeActivity extends AppCompatActivity implements ActivityController, HomeController {
 
-    private final static int INITIAL_BOARD_DIMENSION = 4;
-    private final static int INITIAL_REPRODUCTION_SPEED = 2000;
+    private static final String GENERATION_BUNDLE_EXTRA = "generation_bundle_extra";
+    private static final String SPEED_BUNDLE_EXTRA = "speed_bundle_extra";
+    private static final String SIZE_BUNDLE_EXTRA = "size_bundle_extra";
+    private static final String RUNNING_BUNDLE_EXTRA = "running_bundle_extra";
+    private final static int MIN_BOARD_DIMENSION = 4;
+    private final static int MIN_REPRODUCTION_SPEED = 2000;
 
     @Inject
     Generator mGenerator;
@@ -31,41 +35,27 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
     Handler mHandler;
 
     private boolean[][] mCurrentGeneration;
-    private int mGenerationSpeed = INITIAL_REPRODUCTION_SPEED;
-    private int mBoardBaseSize = INITIAL_BOARD_DIMENSION + 1;
-
-    private boolean mActive;
+    private int mGenerationSpeed;
+    private int mBoardBaseSize;
+    private boolean mRunning;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         resolveDependencies();
-
+        initialiseParameters(savedInstanceState);
         mHomeUi.createView(this, this);
-        mHandler.post(runnable);
+        mHandler.post(mGeneratorRunner);
     }
 
-//    @Override
-//    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-//        outState.putSerializable("test", mCurrentGeneration);
-//        super.onSaveInstanceState(outState, outPersistentState);
-//    }
-//
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//        mCurrentGeneration = (boolean[][]) savedInstanceState.getSerializable("test");
-//    }
-
-    private void resolveDependencies() {
-        GlobalComponent component = DaggerGlobalComponent.builder()
-                .activityModule(new ActivityModule())
-                .viewModule(new ViewModule())
-                .controllerModule(new ControllerModule())
-                .build();
-
-        component.resolveDependenciesFor(this);
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putSerializable(GENERATION_BUNDLE_EXTRA, mCurrentGeneration);
+        outState.putInt(SPEED_BUNDLE_EXTRA, mGenerationSpeed);
+        outState.putInt(SIZE_BUNDLE_EXTRA, mBoardBaseSize);
+        outState.putBoolean(RUNNING_BUNDLE_EXTRA, mRunning);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -76,7 +66,16 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
 
     @Override
     public void onRunClicked() {
-        mActive = !mActive;
+        mRunning = !mRunning;
+    }
+
+    @Override
+    public void onClearClicked() {
+        int x = mCurrentGeneration.length;
+        int y = mCurrentGeneration[0].length;
+        mCurrentGeneration = null;
+        createNewBoard(x, y);
+        mHomeUi.setData(mCurrentGeneration);
     }
 
     @Override
@@ -92,6 +91,39 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
         mHomeUi.setData(mCurrentGeneration);
     }
 
+    @Override
+    public void onSpeedChanged(int newSpeed) {
+        // TODO improve this experience
+        mGenerationSpeed = MIN_REPRODUCTION_SPEED - ((100 * newSpeed) - 1);
+    }
+
+    @Override
+    public void onSizeChanged(int newSize) {
+        mBoardBaseSize = MIN_BOARD_DIMENSION + (newSize + 1);
+    }
+
+    private void resolveDependencies() {
+        GlobalComponent component = DaggerGlobalComponent.builder()
+                .activityModule(new ActivityModule())
+                .viewModule(new ViewModule())
+                .controllerModule(new ControllerModule())
+                .build();
+
+        component.resolveDependenciesFor(this);
+    }
+
+    private void initialiseParameters(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            mGenerationSpeed = savedInstanceState.getInt(SPEED_BUNDLE_EXTRA, MIN_REPRODUCTION_SPEED);
+            mBoardBaseSize = savedInstanceState.getInt(SIZE_BUNDLE_EXTRA, MIN_BOARD_DIMENSION + 1);
+            mCurrentGeneration = (boolean[][]) savedInstanceState.getSerializable(GENERATION_BUNDLE_EXTRA);
+            mRunning = savedInstanceState.getBoolean(RUNNING_BUNDLE_EXTRA, false);
+        } else {
+            mGenerationSpeed = MIN_REPRODUCTION_SPEED;
+            mBoardBaseSize = MIN_BOARD_DIMENSION + 1;
+        }
+    }
+
     private void createNewBoard(int x, int y) {
         boolean[][] newGeneration = new boolean[x][y];
         if (mCurrentGeneration != null) {
@@ -102,24 +134,14 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
         mCurrentGeneration = newGeneration;
     }
 
-    @Override
-    public void onSpeedChanged(int newSpeed) {
-        mGenerationSpeed = INITIAL_REPRODUCTION_SPEED - ((100 * newSpeed) - 1);
-    }
-
-    @Override
-    public void onSizeChanged(int newSizeMultiplier) {
-        mBoardBaseSize = INITIAL_BOARD_DIMENSION + (newSizeMultiplier + 1);
-    }
-
-    private Runnable runnable = new Runnable() {
+    private Runnable mGeneratorRunner = new Runnable() {
         @Override
         public void run() {
-            if (mActive) {
+            if (mRunning) {
                 mCurrentGeneration = mGenerator.nextGeneration(mCurrentGeneration);
                 mHomeUi.setData(mCurrentGeneration);
             }
-            mHandler.postDelayed(runnable, mGenerationSpeed);
+            mHandler.postDelayed(mGeneratorRunner, mGenerationSpeed);
         }
     };
 }

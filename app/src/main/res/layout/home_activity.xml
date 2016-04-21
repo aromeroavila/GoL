@@ -8,7 +8,7 @@
     android:orientation="vertical"
     sothree:umanoDragView="@+id/settings_panel"
     sothree:umanoOverlay="true"
-    sothree:umanoPanelHeight="80dp"
+    sothree:umanoPanelHeight="100dp"
     sothree:umanoShadowHeight="8dp">
 
     <arao.gameoflife.view.custom.BoardView
@@ -17,29 +17,47 @@
         android:layout_height="match_parent"
         android:background="@android:color/black" />
 
-    <GridLayout
+    <LinearLayout
         android:id="@+id/settings_panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
-        android:columnCount="2"
         android:orientation="vertical"
         android:padding="@dimen/medium">
 
-        <TextView
-            android:id="@+id/run_button_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/execute_button_label_text"
-            android:textStyle="bold"
-            tools:ignore="RtlHardcoded" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <ToggleButton
-            android:id="@+id/execute_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/small"
-            tools:ignore="RtlHardcoded" />
+            <TextView
+                android:id="@+id/run_button_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:text="@string/execute_button_label_text"
+                android:textStyle="bold"
+                tools:ignore="RtlHardcoded" />
+
+            <ToggleButton
+                android:id="@+id/execute_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@id/run_button_label"
+                android:layout_margin="@dimen/small"
+                tools:ignore="RtlHardcoded" />
+
+            <Button
+                android:id="@+id/clear_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignTop="@id/execute_button"
+                android:layout_marginRight="@dimen/small"
+                android:text="@string/clear_button_text"
+                tools:ignore="RtlHardcoded" />
+
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/size_bar_label"
@@ -86,6 +104,6 @@
             android:layout_marginLeft="@dimen/small"
             tools:ignore="RtlHardcoded" />
 
-    </GridLayout>
+    </LinearLayout>
 
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>
