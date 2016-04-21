@@ -10,4 +10,8 @@ public interface HomeController {
 
     void onBoardViewSized(int width, int height);
 
+    void onSpeedChanged(int newSpeed);
+
+    void onSizeChanged(int newSizeMultiplier);
+
 }

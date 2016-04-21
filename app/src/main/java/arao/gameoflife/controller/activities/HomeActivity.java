@@ -16,11 +16,12 @@ import arao.gameoflife.view.ui.ViewModule;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.System.arraycopy;
 
 public class HomeActivity extends AppCompatActivity implements ActivityController, HomeController {
 
-    private final static int INITIAL_BOARD_DIMENSION = 20;
-    private final static int INITIAL_REPRODUCTION_SPEED = 500;
+    private final static int INITIAL_BOARD_DIMENSION = 4;
+    private final static int INITIAL_REPRODUCTION_SPEED = 2000;
 
     @Inject
     Generator mGenerator;
@@ -31,7 +32,7 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
 
     private boolean[][] mCurrentGeneration;
     private int mGenerationSpeed = INITIAL_REPRODUCTION_SPEED;
-    private int mBoardSize = INITIAL_BOARD_DIMENSION;
+    private int mBoardBaseSize = INITIAL_BOARD_DIMENSION + 1;
 
     private boolean mActive;
 
@@ -42,9 +43,20 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
         resolveDependencies();
 
         mHomeUi.createView(this, this);
-
         mHandler.post(runnable);
     }
+
+//    @Override
+//    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+//        outState.putSerializable("test", mCurrentGeneration);
+//        super.onSaveInstanceState(outState, outPersistentState);
+//    }
+//
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        mCurrentGeneration = (boolean[][]) savedInstanceState.getSerializable("test");
+//    }
 
     private void resolveDependencies() {
         GlobalComponent component = DaggerGlobalComponent.builder()
@@ -69,15 +81,35 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
 
     @Override
     public void onBoardViewSized(int width, int height) {
-        double ratio = (double) max(width, height) / min(width, height);
-        int bigDimension = (int) (mBoardSize * ratio);
+        float ratio = (float) max(width, height) / min(width, height);
+        int longSideSize = (int) (mBoardBaseSize * ratio);
         if (width < height) {
-            mCurrentGeneration = new boolean[mBoardSize][bigDimension];
+            createNewBoard(mBoardBaseSize, longSideSize);
         } else {
-            mCurrentGeneration = new boolean[bigDimension][mBoardSize];
+            createNewBoard(longSideSize, mBoardBaseSize);
         }
 
         mHomeUi.setData(mCurrentGeneration);
+    }
+
+    private void createNewBoard(int x, int y) {
+        boolean[][] newGeneration = new boolean[x][y];
+        if (mCurrentGeneration != null) {
+            for (int i = 0; i < min(mCurrentGeneration.length, x); i++) {
+                arraycopy(mCurrentGeneration[i], 0, newGeneration[i], 0, min(mCurrentGeneration[i].length, y));
+            }
+        }
+        mCurrentGeneration = newGeneration;
+    }
+
+    @Override
+    public void onSpeedChanged(int newSpeed) {
+        mGenerationSpeed = INITIAL_REPRODUCTION_SPEED - ((100 * newSpeed) - 1);
+    }
+
+    @Override
+    public void onSizeChanged(int newSizeMultiplier) {
+        mBoardBaseSize = INITIAL_BOARD_DIMENSION + (newSizeMultiplier + 1);
     }
 
     private Runnable runnable = new Runnable() {

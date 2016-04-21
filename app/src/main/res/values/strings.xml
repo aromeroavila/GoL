@@ -2,8 +2,9 @@
 
     <string name="app_name">Game Of Life</string>
 
-    <string name="execute_button_label_text">Run</string>
+    <string name="execute_button_label_text">Running</string>
     <string name="size_bar_label_text">Size</string>
     <string name="speed_bar_label_text">Speed</string>
+    <string name="color_bar_label_text">Color</string>
 
 </resources>

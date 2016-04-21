@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -12,8 +13,6 @@ import android.view.View;
 import javax.inject.Inject;
 
 import arao.gameoflife.model.Cell;
-
-import static java.lang.Math.min;
 
 public class BoardView extends View {
 
@@ -28,6 +27,8 @@ public class BoardView extends View {
     private int mColumns;
     private int mRows;
     private float mCellPixelSize;
+    @ColorInt
+    private int mColor;
     private OnCellClickListener mOnCellClickListener;
 
     public BoardView(final Context context, final AttributeSet attrs) {
@@ -51,6 +52,11 @@ public class BoardView extends View {
         invalidate();
     }
 
+    public void setColor(@ColorInt int color) {
+        mColor = color;
+        invalidate();
+    }
+
     public void setOnCellClickListener(OnCellClickListener listener) {
         mOnCellClickListener = listener;
     }
@@ -59,9 +65,7 @@ public class BoardView extends View {
     protected void onDraw(final Canvas canvas) {
         if (mGeneration != null) {
             final int width = getWidth();
-            final int height = getHeight();
-
-            mCellPixelSize = min(getCellWidth(width), getCellHeight(height));
+            mCellPixelSize = getCellWidth(width);
             Cell cell = Cell.Builder.aCell().build();
 
             for (int i = 0; i < mColumns; i++) {
@@ -110,7 +114,7 @@ public class BoardView extends View {
                 (int) (xPos + mCellPixelSize) - CELL_SPACING_PIXELS,  // right
                 (int) (yPos + mCellPixelSize) - CELL_SPACING_PIXELS); // bottom
 
-        mCellColor.setColor(cell.getValue() ? Color.BLUE : Color.WHITE);
+        mCellColor.setColor(cell.getValue() ? mColor : Color.WHITE);
         canvas.drawRect(mRectangle, mCellColor);
         mRectangle.setEmpty();
     }
@@ -135,10 +139,6 @@ public class BoardView extends View {
 
     private float getCellWidth(final int totalWidth) {
         return (float) totalWidth / mColumns;
-    }
-
-    private float getCellHeight(final int totalHeight) {
-        return (float) totalHeight / mRows;
     }
 
     private float getCellInitialX(final int cellXPosition) {
