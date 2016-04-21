@@ -1,6 +1,7 @@
 package arao.gameoflife.view.ui;
 
 import android.view.View;
+import android.widget.ToggleButton;
 
 import arao.gameoflife.R;
 import arao.gameoflife.controller.activities.ActivityController;
@@ -11,17 +12,25 @@ import arao.gameoflife.view.custom.OnCellClickListener;
 
 class HomeUiImpl implements HomeUi, View.OnClickListener, OnCellClickListener {
 
-    private BoardView mBoardView;
     private HomeController mHomeController;
+    private BoardView mBoardView;
 
     @Override
     public void createView(ActivityController activityController, HomeController homeController) {
         mHomeController = homeController;
 
-        activityController.setContentView(R.layout.activity_board);
-        activityController.findViewById(R.id.button).setOnClickListener(this);
+        activityController.setContentView(R.layout.home_activity);
+        ToggleButton mButton = (ToggleButton) activityController.findViewById(R.id.execute_button);
+        mButton.setOnClickListener(this);
         mBoardView = (BoardView) activityController.findViewById(R.id.board_view);
         mBoardView.setOnCellClickListener(this);
+
+        mBoardView.post(new Runnable() {
+            @Override
+            public void run() {
+                mHomeController.onBoardViewSized(mBoardView.getWidth(), mBoardView.getHeight());
+            }
+        });
     }
 
     @Override

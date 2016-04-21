@@ -14,17 +14,26 @@ import arao.gameoflife.model.Cell;
 import arao.gameoflife.view.ui.HomeUi;
 import arao.gameoflife.view.ui.ViewModule;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 public class HomeActivity extends AppCompatActivity implements ActivityController, HomeController {
+
+    private final static int INITIAL_BOARD_DIMENSION = 20;
+    private final static int INITIAL_REPRODUCTION_SPEED = 500;
 
     @Inject
     Generator mGenerator;
     @Inject
-    HomeUi homeUi;
+    HomeUi mHomeUi;
     @Inject
-    Handler handler;
+    Handler mHandler;
 
-    private boolean taskCheck;
     private boolean[][] mCurrentGeneration;
+    private int mGenerationSpeed = INITIAL_REPRODUCTION_SPEED;
+    private int mBoardSize = INITIAL_BOARD_DIMENSION;
+
+    private boolean mActive;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,10 +41,9 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
 
         resolveDependencies();
 
-        homeUi.createView(this, this);
-        initaliseBoard();
+        mHomeUi.createView(this, this);
 
-        handler.postDelayed(runnable, 500);
+        mHandler.post(runnable);
     }
 
     private void resolveDependencies() {
@@ -48,30 +56,38 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
         component.resolveDependenciesFor(this);
     }
 
-    private void initaliseBoard() {
-        mCurrentGeneration = new boolean[10][10];
-        homeUi.setData(mCurrentGeneration);
-    }
-
     @Override
     public void onCellClicked(Cell cell) {
         mCurrentGeneration[cell.getX()][cell.getY()] = cell.getValue();
-        homeUi.setData(mCurrentGeneration);
+        mHomeUi.setData(mCurrentGeneration);
     }
 
     @Override
     public void onRunClicked() {
-        taskCheck = !taskCheck;
+        mActive = !mActive;
+    }
+
+    @Override
+    public void onBoardViewSized(int width, int height) {
+        double ratio = (double) max(width, height) / min(width, height);
+        int bigDimension = (int) (mBoardSize * ratio);
+        if (width < height) {
+            mCurrentGeneration = new boolean[mBoardSize][bigDimension];
+        } else {
+            mCurrentGeneration = new boolean[bigDimension][mBoardSize];
+        }
+
+        mHomeUi.setData(mCurrentGeneration);
     }
 
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            if (taskCheck) {
+            if (mActive) {
                 mCurrentGeneration = mGenerator.nextGeneration(mCurrentGeneration);
-                homeUi.setData(mCurrentGeneration);
+                mHomeUi.setData(mCurrentGeneration);
             }
-            handler.postDelayed(runnable, 300);
+            mHandler.postDelayed(runnable, mGenerationSpeed);
         }
     };
 }

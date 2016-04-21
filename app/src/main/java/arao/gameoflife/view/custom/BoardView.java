@@ -13,6 +13,8 @@ import javax.inject.Inject;
 
 import arao.gameoflife.model.Cell;
 
+import static java.lang.Math.min;
+
 public class BoardView extends View {
 
     private final static int CELL_SPACING_PIXELS = 1;
@@ -25,7 +27,7 @@ public class BoardView extends View {
     private boolean[][] mGeneration;
     private int mColumns;
     private int mRows;
-    private int mCellPixelSize;
+    private float mCellPixelSize;
     private OnCellClickListener mOnCellClickListener;
 
     public BoardView(final Context context, final AttributeSet attrs) {
@@ -59,7 +61,7 @@ public class BoardView extends View {
             final int width = getWidth();
             final int height = getHeight();
 
-            mCellPixelSize = Math.min(getCellWidth(width), getCellHeight(height));
+            mCellPixelSize = min(getCellWidth(width), getCellHeight(height));
             Cell cell = Cell.Builder.aCell().build();
 
             for (int i = 0; i < mColumns; i++) {
@@ -78,9 +80,8 @@ public class BoardView extends View {
         final int x = (int) event.getX();
         final int y = (int) event.getY();
 
-        if (event.getAction() == MotionEvent.ACTION_DOWN ||
-                event.getAction() == MotionEvent.ACTION_MOVE) {
-
+        if (event.getAction() == MotionEvent.ACTION_DOWN
+                || event.getAction() == MotionEvent.ACTION_MOVE) {
             int cellColumn = getCellColumn(x);
             int cellRow = getCellRow(y);
 
@@ -94,20 +95,20 @@ public class BoardView extends View {
                         .build();
                 mOnCellClickListener.onCellClick(clickedCell);
             }
+            return true;
         }
-
         return false;
     }
 
     private void drawCell(Canvas canvas, Cell cell) {
-        final int xPos = getCellInitialX(cell.getX());
-        final int yPos = getCellInitialY(cell.getY());
+        final float xPos = getCellInitialX(cell.getX());
+        final float yPos = getCellInitialY(cell.getY());
 
         mRectangle.set(
-                xPos + CELL_SPACING_PIXELS,                   // left
-                yPos + CELL_SPACING_PIXELS,                   // top
-                xPos + mCellPixelSize - CELL_SPACING_PIXELS,  // right
-                yPos + mCellPixelSize - CELL_SPACING_PIXELS); // bottom
+                (int) xPos + CELL_SPACING_PIXELS,                   // left
+                (int) yPos + CELL_SPACING_PIXELS,                   // top
+                (int) (xPos + mCellPixelSize) - CELL_SPACING_PIXELS,  // right
+                (int) (yPos + mCellPixelSize) - CELL_SPACING_PIXELS); // bottom
 
         mCellColor.setColor(cell.getValue() ? Color.BLUE : Color.WHITE);
         canvas.drawRect(mRectangle, mCellColor);
@@ -132,19 +133,19 @@ public class BoardView extends View {
         return -1;
     }
 
-    private int getCellWidth(final int totalWidth) {
-        return totalWidth / mColumns;
+    private float getCellWidth(final int totalWidth) {
+        return (float) totalWidth / mColumns;
     }
 
-    private int getCellHeight(final int totalHeight) {
-        return totalHeight / mRows;
+    private float getCellHeight(final int totalHeight) {
+        return (float) totalHeight / mRows;
     }
 
-    private int getCellInitialX(final int cellXPosition) {
+    private float getCellInitialX(final int cellXPosition) {
         return mCellPixelSize * cellXPosition;
     }
 
-    private int getCellInitialY(final int cellYPosition) {
+    private float getCellInitialY(final int cellYPosition) {
         return mCellPixelSize * cellYPosition;
     }
 }

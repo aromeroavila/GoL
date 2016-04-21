@@ -8,4 +8,6 @@ public interface HomeController {
 
     void onRunClicked();
 
+    void onBoardViewSized(int width, int height);
+
 }
