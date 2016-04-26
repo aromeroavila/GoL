@@ -25,7 +25,7 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
     private static final String SIZE_BUNDLE_EXTRA = "size_bundle_extra";
     private static final String RUNNING_BUNDLE_EXTRA = "running_bundle_extra";
     private final static int MIN_BOARD_DIMENSION = 4;
-    private final static int MIN_REPRODUCTION_SPEED = 2000;
+    private final static int MIN_REPRODUCTION_SPEED = 1000;
 
     @Inject
     Generator mGenerator;
@@ -74,7 +74,7 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
         int x = mCurrentGeneration.length;
         int y = mCurrentGeneration[0].length;
         mCurrentGeneration = null;
-        createNewBoard(x, y);
+        mCurrentGeneration = createNewBoard(x, y);
         mHomeUi.setData(mCurrentGeneration);
     }
 
@@ -83,9 +83,9 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
         float ratio = (float) max(width, height) / min(width, height);
         int longSideSize = (int) (mBoardBaseSize * ratio);
         if (width < height) {
-            createNewBoard(mBoardBaseSize, longSideSize);
+            mCurrentGeneration = createNewBoard(mBoardBaseSize, longSideSize);
         } else {
-            createNewBoard(longSideSize, mBoardBaseSize);
+            mCurrentGeneration = createNewBoard(longSideSize, mBoardBaseSize);
         }
 
         mHomeUi.setData(mCurrentGeneration);
@@ -93,8 +93,7 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
 
     @Override
     public void onSpeedChanged(int newSpeed) {
-        // TODO improve this experience
-        mGenerationSpeed = MIN_REPRODUCTION_SPEED - ((100 * newSpeed) - 1);
+        mGenerationSpeed = MIN_REPRODUCTION_SPEED - ((50 * newSpeed) - 1);
     }
 
     @Override
@@ -124,14 +123,14 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
         }
     }
 
-    private void createNewBoard(int x, int y) {
+    private boolean[][] createNewBoard(int x, int y) {
         boolean[][] newGeneration = new boolean[x][y];
         if (mCurrentGeneration != null) {
             for (int i = 0; i < min(mCurrentGeneration.length, x); i++) {
                 arraycopy(mCurrentGeneration[i], 0, newGeneration[i], 0, min(mCurrentGeneration[i].length, y));
             }
         }
-        mCurrentGeneration = newGeneration;
+        return newGeneration;
     }
 
     private Runnable mGeneratorRunner = new Runnable() {

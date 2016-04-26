@@ -1,13 +1,13 @@
 package arao.gameoflife.view.ui;
 
+import android.annotation.SuppressLint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ScaleDrawable;
 import android.support.annotation.ColorInt;
 import android.view.View;
-import android.widget.Button;
 import android.widget.SeekBar;
-import android.widget.ToggleButton;
+import android.widget.TextView;
 
 import javax.inject.Inject;
 
@@ -21,14 +21,19 @@ import arao.gameoflife.view.utils.ColorParser;
 
 class HomeUiImpl implements HomeUi, View.OnClickListener, OnCellClickListener, SeekBar.OnSeekBarChangeListener {
 
-    private static final int MAX_SIZE_BAR_VALUE = 40;
-    private static final int MAX_SPEED_BAR_VALUE = 20;
-    private static final int MAX_COLOR_BAR_VALUE = 256 * 7 - 1;
+    private static final int SIZE_BAR_INITIAL_VALUE = 15;
+    private static final int SIZE_BAR_MAX_VALUE = 40;
+    private static final int SPEED_BAR_INITIAL_VALUE = 10;
+    private static final int SPEED_BAR_MAX_VALUE = 20;
+    private static final int COLOR_BAR_INITIAL_VALUE = 0;
+    private static final int COLOR_BAR_MAX_VALUE = 256 * 7 - 1;
 
     private final ColorParser mColorParser;
 
     private HomeController mHomeController;
     private BoardView mBoardView;
+    private TextView mSizeBarIndicator;
+    private TextView mSpeedBarIndicator;
 
     @Inject
     HomeUiImpl(ColorParser colorParser) {
@@ -38,31 +43,8 @@ class HomeUiImpl implements HomeUi, View.OnClickListener, OnCellClickListener, S
     @Override
     public void createView(ActivityController activityController, HomeController homeController) {
         mHomeController = homeController;
-
         activityController.setContentView(R.layout.home_activity);
-        ToggleButton mButton = (ToggleButton) activityController.findViewById(R.id.execute_button);
-        mButton.setOnClickListener(this);
-        Button clearButton = (Button) activityController.findViewById(R.id.clear_button);
-        clearButton.setOnClickListener(this);
-        mBoardView = (BoardView) activityController.findViewById(R.id.board_view);
-        mBoardView.setOnCellClickListener(this);
-        SeekBar sizeBar = (SeekBar) activityController.findViewById(R.id.size_bar);
-        sizeBar.setOnSeekBarChangeListener(this);
-        sizeBar.setMax(MAX_SIZE_BAR_VALUE);
-        SeekBar speedBar = (SeekBar) activityController.findViewById(R.id.speed_bar);
-        speedBar.setOnSeekBarChangeListener(this);
-        speedBar.setMax(MAX_SPEED_BAR_VALUE);
-        SeekBar colorBar = (SeekBar) activityController.findViewById(R.id.color_bar);
-        colorBar.setMax(MAX_COLOR_BAR_VALUE);
-        onProgressChanged(colorBar, 0, true);
-        colorBar.setOnSeekBarChangeListener(this);
-
-        mBoardView.post(new Runnable() {
-            @Override
-            public void run() {
-                mHomeController.onBoardViewSized(mBoardView.getWidth(), mBoardView.getHeight());
-            }
-        });
+        initViews(activityController);
     }
 
     @Override
@@ -88,20 +70,21 @@ class HomeUiImpl implements HomeUi, View.OnClickListener, OnCellClickListener, S
         mHomeController.onCellClicked(cell);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         int id = seekBar.getId();
         switch (id) {
             case R.id.size_bar:
+                mHomeController.onSizeChanged(progress);
+                mSizeBarIndicator.setText(Integer.toString(progress + 5));
                 if (fromUser) {
-                    mHomeController.onSizeChanged(progress);
                     mHomeController.onBoardViewSized(mBoardView.getWidth(), mBoardView.getHeight());
                 }
                 break;
             case R.id.speed_bar:
-                if (fromUser) {
-                    mHomeController.onSpeedChanged(progress);
-                }
+                mSpeedBarIndicator.setText(Integer.toString(progress));
+                mHomeController.onSpeedChanged(progress);
                 break;
             case R.id.color_bar:
                 int color = mColorParser.colorFrom(progress);
@@ -117,6 +100,34 @@ class HomeUiImpl implements HomeUi, View.OnClickListener, OnCellClickListener, S
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
+    }
+
+    private void initViews(ActivityController activityController) {
+        activityController.findViewById(R.id.execute_button).setOnClickListener(this);
+        activityController.findViewById(R.id.clear_button).setOnClickListener(this);
+        mBoardView = (BoardView) activityController.findViewById(R.id.board_view);
+        mBoardView.setOnCellClickListener(this);
+        mSizeBarIndicator = (TextView) activityController.findViewById(R.id.size_bar_indicator);
+        mSpeedBarIndicator = (TextView) activityController.findViewById(R.id.speed_bar_indicator);
+        SeekBar sizeBar = (SeekBar) activityController.findViewById(R.id.size_bar);
+        sizeBar.setOnSeekBarChangeListener(this);
+        sizeBar.setMax(SIZE_BAR_MAX_VALUE);
+        sizeBar.setProgress(SIZE_BAR_INITIAL_VALUE);
+        SeekBar speedBar = (SeekBar) activityController.findViewById(R.id.speed_bar);
+        speedBar.setOnSeekBarChangeListener(this);
+        speedBar.setMax(SPEED_BAR_MAX_VALUE);
+        speedBar.setProgress(SPEED_BAR_INITIAL_VALUE);
+        SeekBar colorBar = (SeekBar) activityController.findViewById(R.id.color_bar);
+        colorBar.setMax(COLOR_BAR_MAX_VALUE);
+        onProgressChanged(colorBar, COLOR_BAR_INITIAL_VALUE, true);
+        colorBar.setOnSeekBarChangeListener(this);
+
+        mBoardView.post(new Runnable() {
+            @Override
+            public void run() {
+                mHomeController.onBoardViewSized(mBoardView.getWidth(), mBoardView.getHeight());
+            }
+        });
     }
 
     private void setSeekBarColor(SeekBar seekBar, @ColorInt int newColor) {
