@@ -4,7 +4,12 @@
     <!--<color name="colorPrimaryDark">#7B1FA2</color>-->
     <!--<color name="colorAccent">#4CAF50</color>-->
 
-    <color name="colorPrimary">#F44336</color>
-    <color name="colorPrimaryDark">#D32F2F</color>
-    <color name="colorAccent">#536DFE</color>
+    <!--<color name="colorPrimary">#F44336</color>-->
+    <!--<color name="colorPrimaryDark">#D32F2F</color>-->
+    <!--<color name="colorAccent">#536DFE</color>-->
+
+    <color name="colorPrimary">#252839</color>
+    <color name="colorPrimaryDark">#677077</color>
+    <color name="colorAccent">#f2b632</color>
+
 </resources>
