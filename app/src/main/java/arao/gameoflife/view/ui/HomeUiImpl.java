@@ -5,8 +5,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ScaleDrawable;
 import android.support.annotation.ColorInt;
-import android.support.annotation.IntegerRes;
-import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -25,7 +23,7 @@ class HomeUiImpl implements HomeUi, View.OnClickListener, OnCellClickListener, S
 
     private static final int SIZE_BAR_INITIAL_VALUE = 15;
     private static final int SIZE_BAR_MAX_VALUE = 40;
-    private static final int SPEED_BAR_INITIAL_VALUE = 10;
+    private static final int SPEED_BAR_INITIAL_VALUE = 15;
     private static final int SPEED_BAR_MAX_VALUE = 20;
     private static final int COLOR_BAR_INITIAL_VALUE = 1032;
     private static final int COLOR_BAR_MAX_VALUE = 256 * 7 - 1;
@@ -90,7 +88,6 @@ class HomeUiImpl implements HomeUi, View.OnClickListener, OnCellClickListener, S
                 break;
             case R.id.color_bar:
                 int color = mColorParser.colorFrom(progress);
-                Log.d("color", Integer.toString(progress));
                 setSeekBarColor(seekBar, color);
                 mBoardView.setColor(color);
                 break;

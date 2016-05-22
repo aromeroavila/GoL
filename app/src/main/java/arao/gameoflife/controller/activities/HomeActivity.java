@@ -2,10 +2,12 @@ package arao.gameoflife.controller.activities;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
 import javax.inject.Inject;
 
+import arao.gameoflife.R;
 import arao.gameoflife.controller.ControllerModule;
 import arao.gameoflife.controller.Generator;
 import arao.gameoflife.injection.components.DaggerGlobalComponent;
@@ -45,6 +47,7 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
 
         resolveDependencies();
         initialiseParameters(savedInstanceState);
+        initActionBar();
         mHomeUi.createView(this, this);
         mHandler.post(mGeneratorRunner);
     }
@@ -109,6 +112,14 @@ public class HomeActivity extends AppCompatActivity implements ActivityControlle
                 .build();
 
         component.resolveDependenciesFor(this);
+    }
+
+    private void initActionBar() {
+        ActionBar supportActionBar = getSupportActionBar();
+        if (supportActionBar != null) {
+            supportActionBar.setDisplayShowHomeEnabled(true);
+            supportActionBar.setIcon(R.mipmap.toolbar_home);
+        }
     }
 
     private void initialiseParameters(Bundle savedInstanceState) {
